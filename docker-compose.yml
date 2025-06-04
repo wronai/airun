@@ -1,0 +1,212 @@
+version: '3.8'
+
+services:
+  # AIRun main application
+  airun:
+    build:
+      context: .
+      target: production
+    container_name: airun-app
+    volumes:
+      - ./examples:/workspace/examples
+      - ./data:/workspace/data
+      - airun-config:/home/airun/.airun
+    environment:
+      - AIRUN_AUTO_FIX=true
+      - AIRUN_DEFAULT_LLM=ollama:codellama
+      - AIRUN_DEBUG=false
+    depends_on:
+      - ollama
+    networks:
+      - airun-network
+    restart: unless-stopped
+
+  # Ollama service for local LLM
+  ollama:
+    image: ollama/ollama:latest
+    container_name: airun-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - airun-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # Development environment
+  airun-dev:
+    build:
+      context: .
+      target: development
+    container_name: airun-dev
+    volumes:
+      - .:/app
+      - airun-dev-config:/home/airun/.airun
+    environment:
+      - AIRUN_DEBUG=true
+      - AIRUN_DEFAULT_LLM=ollama:codellama
+    depends_on:
+      - ollama
+    networks:
+      - airun-network
+    command: bash
+    stdin_open: true
+    tty: true
+
+  # Documentation server
+  docs:
+    build:
+      context: .
+      target: development
+    container_name: airun-docs
+    volumes:
+      - .:/app
+      - docs-site:/app/site
+    ports:
+      - "8000:8000"
+    networks:
+      - airun-network
+    command: poetry run mkdocs serve --dev-addr=0.0.0.0:8000
+    restart: unless-stopped
+
+  # Testing environment
+  test:
+    build:
+      context: .
+      target: development
+    container_name: airun-test
+    volumes:
+      - .:/app
+      - test-results:/app/test-results
+    environment:
+      - AIRUN_DEBUG=true
+      - PYTEST_ARGS=--junitxml=/app/test-results/junit.xml --cov=airun --cov-report=xml:/app/test-results/coverage.xml
+    networks:
+      - airun-network
+    command: poetry run pytest
+    profiles:
+      - testing
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: airun-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - airun-network
+    restart: unless-stopped
+    profiles:
+      - cache
+
+  # PostgreSQL for advanced features (optional)
+  postgres:
+    image: postgres:15-alpine
+    container_name: airun-postgres
+    environment:
+      - POSTGRES_DB=airun
+      - POSTGRES_USER=airun
+      - POSTGRES_PASSWORD=airun_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - airun-network
+    restart: unless-stopped
+    profiles:
+      - database
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: airun-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - airun-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: airun-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - airun-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: airun-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - airun
+      - docs
+    networks:
+      - airun-network
+    restart: unless-stopped
+    profiles:
+      - proxy
+
+volumes:
+  airun-config:
+    driver: local
+  airun-dev-config:
+    driver: local
+  ollama-data:
+    driver: local
+  docs-site:
+    driver: local
+  test-results:
+    driver: local
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  nginx-logs:
+    driver: local
+
+networks:
+  airun-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

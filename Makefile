@@ -346,4 +346,239 @@ version: ## Show current version
 	@echo "$(GREEN)$(PROJECT_NAME) v$(VERSION)$(NC)"
 
 # Dependencies check
-check-
+check-system: ## Check system requirements
+	@echo "$(BLUE)Checking system requirements...$(NC)"
+	@command -v python3 >/dev/null 2>&1 && echo "$(GREEN)✅ Python 3$(NC)" || echo "$(RED)❌ Python 3 not found$(NC)"
+	@command -v node >/dev/null 2>&1 && echo "$(GREEN)✅ Node.js$(NC)" || echo "$(YELLOW)⚠️  Node.js not found$(NC)"
+	@command -v php >/dev/null 2>&1 && echo "$(GREEN)✅ PHP$(NC)" || echo "$(YELLOW)⚠️  PHP not found$(NC)"
+	@command -v bash >/dev/null 2>&1 && echo "$(GREEN)✅ Bash$(NC)" || echo "$(YELLOW)⚠️  Bash not found$(NC)"
+	@command -v git >/dev/null 2>&1 && echo "$(GREEN)✅ Git$(NC)" || echo "$(RED)❌ Git not found$(NC)"
+	@command -v curl >/dev/null 2>&1 && echo "$(GREEN)✅ cURL$(NC)" || echo "$(RED)❌ cURL not found$(NC)"
+	@command -v ollama >/dev/null 2>&1 && echo "$(GREEN)✅ Ollama$(NC)" || echo "$(YELLOW)⚠️  Ollama not found (install: curl -fsSL https://ollama.ai/install.sh | sh)$(NC)"
+
+# Platform-specific installation
+install-system-deps-ubuntu: ## Install system dependencies on Ubuntu/Debian
+	@echo "$(BLUE)Installing system dependencies for Ubuntu/Debian...$(NC)"
+	sudo apt update
+	sudo apt install -y python3 python3-pip nodejs npm php-cli bash git curl
+	curl -fsSL https://ollama.ai/install.sh | sh
+	@echo "$(GREEN)✅ System dependencies installed$(NC)"
+
+install-system-deps-macos: ## Install system dependencies on macOS
+	@echo "$(BLUE)Installing system dependencies for macOS...$(NC)"
+	@command -v brew >/dev/null 2>&1 || { echo "$(RED)❌ Homebrew not found. Install from https://brew.sh$(NC)"; exit 1; }
+	brew install python node php git curl
+	curl -fsSL https://ollama.ai/install.sh | sh
+	@echo "$(GREEN)✅ System dependencies installed$(NC)"
+
+install-system-deps-arch: ## Install system dependencies on Arch Linux
+	@echo "$(BLUE)Installing system dependencies for Arch Linux...$(NC)"
+	sudo pacman -S --needed python nodejs npm php bash git curl
+	curl -fsSL https://ollama.ai/install.sh | sh
+	@echo "$(GREEN)✅ System dependencies installed$(NC)"
+
+# Docker Compose targets
+docker-compose-up: ## Start services with docker-compose
+	@echo "$(BLUE)Starting services with docker-compose...$(NC)"
+	docker-compose up -d
+	@echo "$(GREEN)✅ Services started$(NC)"
+
+docker-compose-down: ## Stop services
+	@echo "$(BLUE)Stopping services...$(NC)"
+	docker-compose down
+	@echo "$(GREEN)✅ Services stopped$(NC)"
+
+docker-compose-logs: ## View service logs
+	@echo "$(BLUE)Viewing service logs...$(NC)"
+	docker-compose logs -f
+
+# Performance and monitoring
+stress-test: ## Run stress tests
+	@echo "$(BLUE)Running stress tests...$(NC)"
+	$(POETRY) run python scripts/stress_test.py
+	@echo "$(GREEN)📊 Stress test complete$(NC)"
+
+memory-test: ## Run memory usage tests
+	@echo "$(BLUE)Running memory usage tests...$(NC)"
+	$(POETRY) run python scripts/memory_test.py
+	@echo "$(GREEN)📊 Memory test complete$(NC)"
+
+# Database and migration (if applicable)
+migrate: ## Run database migrations
+	@echo "$(BLUE)Running database migrations...$(NC)"
+	# Add migration commands here if using database
+	@echo "$(GREEN)✅ Migrations complete$(NC)"
+
+seed-data: ## Seed test data
+	@echo "$(BLUE)Seeding test data...$(NC)"
+	$(POETRY) run python scripts/seed_data.py
+	@echo "$(GREEN)✅ Test data seeded$(NC)"
+
+# Backup and restore
+backup: ## Create backup of important files
+	@echo "$(BLUE)Creating backup...$(NC)"
+	@timestamp=$(date +%Y%m%d_%H%M%S) && \
+	mkdir -p backups/$timestamp && \
+	cp -r airun/ backups/$timestamp/ && \
+	cp -r tests/ backups/$timestamp/ && \
+	cp pyproject.toml backups/$timestamp/ && \
+	echo "$(GREEN)✅ Backup created: backups/$timestamp$(NC)"
+
+restore: ## Restore from backup (specify BACKUP_DIR)
+	@echo "$(BLUE)Restoring from backup...$(NC)"
+	@if [ -z "$(BACKUP_DIR)" ]; then echo "$(RED)❌ Please specify BACKUP_DIR: make restore BACKUP_DIR=backups/20240101_120000$(NC)"; exit 1; fi
+	@if [ ! -d "$(BACKUP_DIR)" ]; then echo "$(RED)❌ Backup directory not found: $(BACKUP_DIR)$(NC)"; exit 1; fi
+	cp -r $(BACKUP_DIR)/* .
+	@echo "$(GREEN)✅ Restored from $(BACKUP_DIR)$(NC)"
+
+# Internationalization (i18n)
+extract-messages: ## Extract translatable messages
+	@echo "$(BLUE)Extracting translatable messages...$(NC)"
+	$(POETRY) run pybabel extract -F babel.cfg -k _l -o messages.pot airun/
+	@echo "$(GREEN)✅ Messages extracted$(NC)"
+
+update-translations: ## Update translation files
+	@echo "$(BLUE)Updating translations...$(NC)"
+	$(POETRY) run pybabel update -i messages.pot -d airun/translations
+	@echo "$(GREEN)✅ Translations updated$(NC)"
+
+compile-translations: ## Compile translation files
+	@echo "$(BLUE)Compiling translations...$(NC)"
+	$(POETRY) run pybabel compile -d airun/translations
+	@echo "$(GREEN)✅ Translations compiled$(NC)"
+
+# Security and vulnerability scanning
+security-scan: ## Run comprehensive security scan
+	@echo "$(BLUE)Running security scan...$(NC)"
+	$(POETRY) run bandit -r airun -f json -o security-report.json
+	$(POETRY) run safety check --json --output safety-report.json
+	@echo "$(GREEN)🔒 Security scan complete$(NC)"
+
+vulnerability-check: ## Check for known vulnerabilities
+	@echo "$(BLUE)Checking for vulnerabilities...$(NC)"
+	$(POETRY) run safety check
+	$(POETRY) run pip-audit
+	@echo "$(GREEN)🔒 Vulnerability check complete$(NC)"
+
+# Code analysis
+complexity: ## Analyze code complexity
+	@echo "$(BLUE)Analyzing code complexity...$(NC)"
+	$(POETRY) run radon cc airun --show-complexity
+	$(POETRY) run radon mi airun
+	@echo "$(GREEN)📊 Complexity analysis complete$(NC)"
+
+dead-code: ## Find dead code
+	@echo "$(BLUE)Finding dead code...$(NC)"
+	$(POETRY) run vulture airun/
+	@echo "$(GREEN)🔍 Dead code analysis complete$(NC)"
+
+# Environment management
+create-env: ## Create new virtual environment
+	@echo "$(BLUE)Creating virtual environment...$(NC)"
+	$(POETRY) env use python3
+	@echo "$(GREEN)✅ Virtual environment created$(NC)"
+
+list-envs: ## List virtual environments
+	@echo "$(BLUE)Virtual environments:$(NC)"
+	$(POETRY) env list
+
+remove-env: ## Remove virtual environment
+	@echo "$(BLUE)Removing virtual environment...$(NC)"
+	$(POETRY) env remove --all
+	@echo "$(GREEN)✅ Virtual environment removed$(NC)"
+
+# GitHub Actions local testing
+act: ## Run GitHub Actions locally (requires act)
+	@echo "$(BLUE)Running GitHub Actions locally...$(NC)"
+	@command -v act >/dev/null 2>&1 || { echo "$(RED)❌ act not found. Install: https://github.com/nektos/act$(NC)"; exit 1; }
+	act
+
+# Quick development workflows
+quick-test: ## Quick test run (fastest tests only)
+	@echo "$(BLUE)Running quick tests...$(NC)"
+	$(POETRY) run pytest tests/test_detector.py tests/test_config.py -v
+
+quick-fix: ## Quick fix for common issues
+	@echo "$(BLUE)Applying quick fixes...$(NC)"
+	$(MAKE) format
+	$(MAKE) lint-fix
+	@echo "$(GREEN)✅ Quick fixes applied$(NC)"
+
+quick-build: ## Quick build without full checks
+	@echo "$(BLUE)Quick build...$(NC)"
+	$(POETRY) build --format wheel
+	@echo "$(GREEN)✅ Quick build complete$(NC)"
+
+# Monitoring and health checks
+health-check: ## Run health checks
+	@echo "$(BLUE)Running health checks...$(NC)"
+	$(POETRY) run airun doctor
+	@echo "$(GREEN)✅ Health check complete$(NC)"
+
+status: ## Show project status
+	@echo "$(BLUE)Project Status$(NC)"
+	@echo "Git status:"
+	@git status --porcelain || echo "Not a git repository"
+	@echo "\nVirtual environment:"
+	@$(POETRY) env info || echo "No virtual environment"
+	@echo "\nDependency status:"
+	@$(POETRY) check || echo "Dependency issues found"
+	@echo "\nTest status:"
+	@$(POETRY) run pytest --collect-only -q | tail -1 || echo "Cannot collect tests"
+
+# Aliases for common tasks
+t: test ## Alias for test
+l: lint ## Alias for lint
+f: format ## Alias for format
+b: build ## Alias for build
+c: clean ## Alias for clean
+h: help ## Alias for help
+
+# Advanced targets for maintainers
+full-test-suite: ## Run complete test suite with all checks
+	@echo "$(BLUE)Running complete test suite...$(NC)"
+	$(MAKE) format-check
+	$(MAKE) lint
+	$(MAKE) security
+	$(MAKE) test-coverage
+	$(MAKE) complexity
+	$(MAKE) vulnerability-check
+	@echo "$(GREEN)✅ Complete test suite passed$(NC)"
+
+release-checklist: ## Show release checklist
+	@echo "$(BLUE)Release Checklist$(NC)"
+	@echo "1. Update CHANGELOG.md"
+	@echo "2. Update version in pyproject.toml"
+	@echo "3. Run: make pre-release"
+	@echo "4. Create git tag: make tag"
+	@echo "5. Build and test: make build && make install-local"
+	@echo "6. Publish: make publish"
+	@echo "7. Deploy docs: make docs-deploy"
+	@echo "8. Create GitHub release"
+
+maintainer-setup: ## Setup environment for maintainers
+	@echo "$(BLUE)Setting up maintainer environment...$(NC)"
+	$(MAKE) dev-setup
+	$(MAKE) install-hooks
+	$(POETRY) run pre-commit run --all-files
+	@echo "$(GREEN)✅ Maintainer environment ready$(NC)"
+
+# Continuous Integration helpers
+ci-install: ## Install for CI environment
+	@echo "$(BLUE)Installing for CI...$(NC)"
+	$(POETRY) install --with dev,test --no-interaction
+
+ci-test: ## Run tests for CI
+	@echo "$(BLUE)Running CI tests...$(NC)"
+	$(POETRY) run pytest --junitxml=junit.xml --cov=airun --cov-report=xml --cov-report=term
+
+ci-lint: ## Run linting for CI
+	@echo "$(BLUE)Running CI linting...$(NC)"
+	$(POETRY) run flake8 airun tests --format=junit-xml --output-file=flake8-report.xml
+	$(POETRY) run mypy airun --junit-xml=mypy-report.xml
+
+# Final catch-all for undefined targets
+%:
+	@echo "$(RED)❌ Unknown target: $@$(NC)"
+	@echo "$(YELLOW)Available targets:$(NC)"
+	@$(MAKE) help
