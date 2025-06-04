@@ -22,7 +22,7 @@ if [ -d "airun" ]; then
     poetry install
 else
     echo "📥 Cloning AIRun repository..."
-    git clone https://github.com/yourusername/airun.git
+    git clone https://github.com/wronai/airun.git
     cd airun
     poetry install
 fi

@@ -1,18 +1,18 @@
 [tool.poetry]
 name = "airun"
-version = "0.1.0"
+version = "0.1.1"
 description = "AI-Enhanced Universal Script Runner with automatic error fixing"
-authors = ["Your Name <your.email@example.com>"]
-license = "MIT"
+authors = ["Tom Sapletta <info@softreck.dev>"]
+license = "Apache"
 readme = "README.md"
-homepage = "https://github.com/yourusername/airun"
-repository = "https://github.com/yourusername/airun"
+homepage = "https://github.com/wronai/airun"
+repository = "https://github.com/wronai/airun"
 documentation = "https://airun.readthedocs.io"
 keywords = ["ai", "automation", "scripting", "llm", "debugging"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",

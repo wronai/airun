@@ -7,14 +7,16 @@ import click
 from pathlib import Path
 from typing import Optional, List
 import time
+import logging
 
 from .core.detector import ScriptDetector, ScriptType
 from .core.runners import RunnerFactory, ExecutionContext
 from .core.config import Config
 from .core.llm_router import LLMRouter
+from .core.ai_fixer import AIFixer
 from .utils.logging import setup_logging, get_logger
 from .utils.validation import validate_script_path, validate_llm_provider
-
+from .utils.file_ops import ensure_directory
 
 logger = get_logger(__name__)
 
@@ -212,7 +214,6 @@ def perform_dry_run(script_path: str, script_type: ScriptType, runner, detector)
 def execute_with_fixing(script_path: str, script_type: ScriptType, runner,
                        llm_router, config, args: List[str], max_retries: int):
     """Execute script with AI fixing logic."""
-    from .core.ai_fixer import AIFixer
 
     if not config.auto_fix or not llm_router:
         # Simple execution without fixing
@@ -330,7 +331,7 @@ def doctor(config_path: Optional[str]):
 
         if not exists:
             try:
-                path.mkdir(parents=True, exist_ok=True)
+                ensure_directory(str(path))
                 click.echo(f"    Created directory: {path}")
             except Exception as e:
                 click.echo(f"    Failed to create: {e}")
@@ -383,7 +384,6 @@ def config_command(init: bool, edit: bool, show: bool, set_values: tuple):
             config = Config.load()
             click.echo("📋 Current configuration:")
             click.echo("=" * 30)
-            # Display configuration in a readable format
             click.echo(config.to_yaml())
         except Exception as e:
             click.echo(f"❌ Failed to load configuration: {e}", err=True)
@@ -404,4 +404,28 @@ def config_command(init: bool, edit: bool, show: bool, set_values: tuple):
             config.save()
             click.echo("💾 Configuration saved")
 
-        except Exception as
+        except Exception as e:
+            click.echo(f"❌ Failed to update configuration: {e}", err=True)
+
+    else:
+        click.echo("Use one of: --init, --edit, --show, or --set KEY=VALUE")
+
+
+# Main entry point
+def main():
+    """Main entry point for the CLI."""
+    try:
+        cli()
+    except click.ClickException as e:
+        e.show()
+        sys.exit(e.exit_code)
+    except KeyboardInterrupt:
+        click.echo("\n⚠️ Interrupted by user", err=True)
+        sys.exit(130)
+    except Exception as e:
+        click.echo(f"❌ Unexpected error: {e}", err=True)
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()

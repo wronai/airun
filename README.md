@@ -31,7 +31,7 @@ pip install airun
 #### Option 2: From source
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/airun.git
+git clone https://github.com/wronai/airun.git
 cd airun
 
 # Install with Poetry
@@ -44,7 +44,7 @@ pip install -e .
 
 #### Option 3: One-line installer
 ```bash
-curl -sSL https://raw.githubusercontent.com/yourusername/airun/main/scripts/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/wronai/airun/main/scripts/install.sh | bash
 ```
 
 ### Setup Ollama (for local AI)
@@ -349,7 +349,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Setup AIRun
       run: |
-        curl -sSL https://raw.githubusercontent.com/yourusername/airun/main/scripts/install.sh | bash
+        curl -sSL https://raw.githubusercontent.com/wronai/airun/main/scripts/install.sh | bash
         airun doctor
     - name: Run tests with AI fixing
       run: |
@@ -390,7 +390,7 @@ jobs:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/airun.git
+git clone https://github.com/wronai/airun.git
 cd airun
 
 # Setup development environment
@@ -549,7 +549,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/airun&type=Date)](https://star-history.com/#yourusername/airun&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=wronai/airun&type=Date)](https://star-history.com/#wronai/airun&Date)
 
 ---
 
