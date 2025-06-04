@@ -1,0 +1,128 @@
+airun/
+├── README.md
+├── LICENSE
+├── CONTRIBUTING.md
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── pyproject.toml
+├── poetry.lock
+├── Makefile
+├── Dockerfile
+├── docker-compose.yml
+├── .gitignore
+├── .pre-commit-config.yaml
+├── .dockerignore
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       ├── release.yml
+│       └── ISSUE_TEMPLATE/
+│           ├── bug_report.md
+│           ├── feature_request.md
+│           └── config.yml
+├── airun/
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── cli.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── detector.py
+│   │   ├── runners.py
+│   │   ├── config.py
+│   │   ├── llm_router.py
+│   │   └── ai_fixer.py
+│   ├── providers/
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── ollama.py
+│   │   ├── openai.py
+│   │   └── claude.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── file_ops.py
+│   │   ├── logging.py
+│   │   ├── validation.py
+│   │   ├── analyzer.py
+│   │   ├── batch_executor.py
+│   │   ├── log_viewer.py
+│   │   ├── cleaner.py
+│   │   └── examples.py
+│   ├── templates/
+│   │   ├── prompts/
+│   │   │   ├── python.txt
+│   │   │   ├── shell.txt
+│   │   │   ├── nodejs.txt
+│   │   │   └── php.txt
+│   │   └── config/
+│   │       └── default.yaml
+│   └── web/
+│       ├── __init__.py
+│       ├── app.py
+│       └── templates/
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_detector.py
+│   ├── test_runners.py
+│   ├── test_config.py
+│   ├── test_cli.py
+│   ├── test_llm_router.py
+│   ├── fixtures/
+│   │   ├── scripts/
+│   │   │   ├── test.py
+│   │   │   ├── test.sh
+│   │   │   ├── test.js
+│   │   │   ├── test.php
+│   │   │   ├── broken_python.py
+│   │   │   ├── broken_shell.sh
+│   │   │   ├── broken_node.js
+│   │   │   └── broken_php.php
+│   │   └── configs/
+│   │       └── test_config.yaml
+│   └── integration/
+│       ├── __init__.py
+│       ├── test_end_to_end.py
+│       └── test_ollama_integration.py
+├── docs/
+│   ├── index.md
+│   ├── installation.md
+│   ├── configuration.md
+│   ├── usage.md
+│   ├── api/
+│   │   ├── core.md
+│   │   └── providers.md
+│   ├── examples/
+│   │   ├── basic_usage.md
+│   │   └── advanced_config.md
+│   └── mkdocs.yml
+├── scripts/
+│   ├── install.sh
+│   ├── setup_ollama.sh
+│   ├── setup_dev.sh
+│   ├── release.sh
+│   ├── benchmark.py
+│   ├── profile_runner.py
+│   ├── stress_test.py
+│   ├── memory_test.py
+│   └── seed_data.py
+├── examples/
+│   ├── config_examples/
+│   │   ├── minimal.yaml
+│   │   ├── full_featured.yaml
+│   │   └── team_config.yaml
+│   ├── broken_scripts/
+│   │   ├── syntax_error.py
+│   │   ├── missing_deps.js
+│   │   └── permission_error.sh
+│   └── demo/
+│       ├── run_demo.py
+│       └── showcase.sh
+├── monitoring/
+│   ├── prometheus.yml
+│   └── grafana/
+│       ├── dashboards/
+│       └── datasources/
+├── nginx/
+│   ├── nginx.conf
+│   └── ssl/
+└── babel.cfg
